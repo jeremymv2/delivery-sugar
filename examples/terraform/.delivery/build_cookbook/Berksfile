@@ -1,0 +1,11 @@
+source 'https://supermarket.chef.io'
+
+metadata
+
+cookbook "terraform", github: "rosstimson/chef-terraform"
+cookbook "delivery-truck", github: "jeremymv2/delivery-truck"
+cookbook "delivery-sugar", github: "jeremymv2/delivery-sugar", branch: "jeremymv2/terraform"
+
+group :delivery do
+  cookbook 'test', path: './test/fixtures/cookbooks/test'
+end
