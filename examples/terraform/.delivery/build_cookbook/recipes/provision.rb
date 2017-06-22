@@ -17,5 +17,5 @@ ENV.update(
 
 delivery_terraform 'terraform-plan' do
   plan_dir "#{delivery_workspace_repo}/.delivery/build_cookbook/files/default/terra_plans"
-  only_if { workflow_stage == 'acceptance' }
+  only_if { workflow_stage?('acceptance') }
 end

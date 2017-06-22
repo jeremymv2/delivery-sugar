@@ -1,4 +1,4 @@
-# TerraForm for Chef Automate Workflow
+# Terraform for Chef Automate Workflow
 
 This is a build_cookbook that demonstrates the use of Terraform in the Provision
 phase of the Acceptance stage to instantiate nodes and/or infrastructure in order to test your cookbooks.
@@ -27,22 +27,22 @@ Exception handling exists to catch errors that may occur during the execution of
 
 Property | Type | Required | Default Value | Purpose
 --- | --- | --- | --- | ---
-plan_dir | String | True | nil | Fully qualified path to location of terraform plans
+plan_dir | String | False | "#{delivery_workspace_repo}/files/default/terraform" | Fully qualified path to location of terraform plans
 repo_path | String | False | delivery_workspace_repo | Used by `shell_out` as current working directory
 
 ### Example Usage
 In addition to having the `terraform` binary installed on the Runners, the `delivery_terraform` requires that you provide your own Plans and secrets management.
-
-The only property required for the resource is the path to the terraform Plans directory.
 
 ```ruby
 # recipes/provision.rb
 
 delivery_terraform 'terraform-plans' do
   plan_dir "#{delivery_workspace_repo}/.delivery/build_cookbook/files/default/terraform"
-  only_if { workflow_stage == 'acceptance' }
+  only_if { workflow_stage?('acceptance') }
 end
 ```
+### Accessing the Infrastructure State
+After each `delivery_terraform` action, the complete infrastructure state is updated in a ruby hash within `node.run_state['terraform-state']`
 
 ### Supported Versions
 This has been tested with Terraform `0.9.8`
@@ -179,9 +179,9 @@ A json file can be used and passed to `chef-solo` to control attributes and the 
 ```
 
 ### Secrets
-You will NOT want to check in your plan files into version control containing secrets in plain text.
+You will NOT want to check plan files containing plain text secrets into version control.
 
-One option is to use Terraform variables as shown below where the values can be set in [ENVIRONMENT](https://www.terraform.io/docs/configuration/variables.html#environment-variables) variables which will automatically populated by Terraform.
+One option is to use Terraform variables as shown below where the values can be set in [ENVIRONMENT](https://www.terraform.io/docs/configuration/variables.html#environment-variables) variables which will automatically be populated by Terraform.
 
 ```js
 # main.tf
@@ -221,7 +221,7 @@ ENV.update(
 delivery_terraform 'terraform-plan' do
   # provide the full path to the location of plans directory
   plan_dir "#{delivery_workspace_repo}/.delivery/build_cookbook/files/default/terra_plans"
-  only_if { workflow_stage == 'acceptance' }
+  only_if { workflow_stage?('acceptance') }
 end
 ```
 
