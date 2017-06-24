@@ -46,8 +46,12 @@ action_class do
 
   def preflight
     msg = 'Terraform preflight check: No such path for'
-    fail "#{msg} plan_dir: #{new_resource.plan_dir}" unless ::File.exist?(new_resource.plan_dir)
-    fail "#{msg} repo_path: #{new_resource.repo_path}" unless ::File.exist?(new_resource.repo_path)
+    fail "#{msg} plan_dir: #{new_resource.plan_dir}" unless ::File.exist?(
+      new_resource.plan_dir
+    )
+    fail "#{msg} repo_path: #{new_resource.repo_path}" unless ::File.exist?(
+      new_resource.repo_path
+    )
   end
 
   def cmd(action)
@@ -64,10 +68,7 @@ action_class do
   end
 
   def state
-    s = shell_out(
-      cmd('state pull'),
-      cwd: new_resource.repo_path
-    ).stdout
+    s = shell_out(cmd('state pull'), cwd: new_resource.repo_path).stdout
     s == '' ? {} : JSON.parse(s)
   end
 
@@ -76,22 +77,10 @@ action_class do
     Chef::Log.info("Terraform state updated in node.run_state['terraform-state']")
   end
 
-  def destroy
-    shell_out(
-      cmd('destroy'),
-      cwd: new_resource.repo_path,
-      live_stream: STDOUT
-    )
-  end
-
   def run(action)
-    shell_out!(
-      cmd(action),
-      cwd: new_resource.repo_path,
-      live_stream: STDOUT
-    )
+    shell_out!(cmd(action), cwd: new_resource.repo_path, live_stream: STDOUT)
   rescue Mixlib::ShellOut::ShellCommandFailed, Mixlib::ShellOut::CommandTimeout
-    destroy
+    shell_out(cmd('destroy'), cwd: new_resource.repo_path, live_stream: STDOUT)
     raise
   ensure
     save_state
